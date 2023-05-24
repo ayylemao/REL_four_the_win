@@ -63,27 +63,44 @@ for i in range(0, 1000):
 
             # LOSER
             # y_true 
-            current_move = game.move_history[turn-2]
+            #current_move = game.move_history[turn-2]
 
-            y =  np.ones(7)
-            y[current_move[0]] = 0
-            y = y/np.sum(y)
-            y = th.tensor(y).unsqueeze(dim=0).unsqueeze(dim=0).unsqueeze(dim=0).float()
+            #y =  np.ones(7)
+            #y[current_move[0]] = 0
+            #y = y/np.sum(y)
+            #y = th.tensor(y).unsqueeze(dim=0).unsqueeze(dim=0).unsqueeze(dim=0).float()
 
-            # y_pred 
-            current_state = th.tensor(game.history[turn-3]).unsqueeze(dim=0).unsqueeze(dim=0).float()
-            y_pred = model(current_state)
+            ## y_pred 
+            #current_state = th.tensor(game.history[turn-3]).unsqueeze(dim=0).unsqueeze(dim=0).float()
+            #y_pred = model(current_state)
 
-            loss = criterion(y_pred, y)
+            #loss = criterion(y_pred, y)
  
-            loss_sum += loss.item()
+            #loss_sum += loss.item()
 
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+            #optimizer.zero_grad()
+            #loss.backward()
+            #optimizer.step()
         loss_arr.append(loss_sum/game.turn_counter)
         print(f'Game {i} loss: {loss_sum/game.turn_counter:.3f}')
 
+
+#loss_arr
+#fig, ax = plt.subplots(1,1)
+#ax.plot(loss_arr)
+#fig.savefig('loss.png', dpi=300)
+#
+#game = Game()
+#
+#loss_arr[0]
+#
+#game.move(0, 1)
+#game.state
+#state_input = th.tensor(game.state).unsqueeze(dim=0).unsqueeze(dim=0).float()
+#model_out = model(state_input*-1)
+#choice = (th.tensor(game.admissable_moves) * model_out).argmax().item()
+#game.move(choice, -1)
+#game.state
 
 
 

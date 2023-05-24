@@ -13,14 +13,17 @@ class CoolModel(nn.Module):
         output_dim = 7
         # input_dim = 42 not necessary?
         
-        self.conv1 = nn.Conv2d(in_channels=1, out_channels=1, kernel_size=4, stride=1) # output shape = 3x4
+        self.conv1 = nn.Conv2d(in_channels=1, out_channels=1, kernel_size=5, stride=1) # output shape = 2x3
         self.a1 = nn.ReLU()
         
-        self.linear2 = nn.Linear(in_features=4, out_features=output_dim) # output 3x7
+        self.linear2 = nn.Linear(in_features=3, out_features=output_dim) # output 3x7
         self.a2 = nn.ReLU()
         
-        self.conv3 = nn.Conv2d(in_channels=1, out_channels=1, kernel_size=(3,1), stride=1) # output shape = 3x4
-        self.a3 = nn.Softmax(dim=3) # classes run over columns, columns correspond to dim 3
+        self.linear3 = nn.Linear(in_features=7, out_features=output_dim) # output 7x7
+        self.a3 = nn.ReLU()
+        
+        self.conv4 = nn.Conv2d(in_channels=1, out_channels=1, kernel_size=(2,1), stride=1) # output shape = (1,1,1,7)
+        self.a4 = nn.Softmax(dim=3) # classes run over columns, columns correspond to dim 3
 
     def forward(self, x):
         """
@@ -32,8 +35,10 @@ class CoolModel(nn.Module):
         x = self.a1(x)
         x = self.linear2(x)
         x = self.a2(x)
-        x = self.conv3(x)
+        x = self.linear3(x)
         x = self.a3(x)
+        x = self.conv4(x)
+        x = self.a4(x)
         return x
 
 # Create Tensors to hold input and outputs.
