@@ -20,7 +20,7 @@ class CoolModel(nn.Module):
         self.a2 = nn.ReLU()
         
         self.conv3 = nn.Conv2d(in_channels=1, out_channels=1, kernel_size=(3,1), stride=1) # output shape = 3x4
-        self.a3 = nn.Softmax(7)
+        self.a3 = nn.Softmax(dim=3) # classes run over columns, columns correspond to dim 3
 
     def forward(self, x):
         """
@@ -33,34 +33,23 @@ class CoolModel(nn.Module):
         x = self.linear2(x)
         x = self.a2(x)
         x = self.conv3(x)
-        x = self.a3()
+        x = self.a3(x)
         return x
-
-
-def get_params(model):
-    """
-    Get number of params.
-    """
-    total_params = sum(p.numel() for p in model.parameters())
-    print("Total number of parameters:", total_params)
-
 
 # Create Tensors to hold input and outputs.
 x = th.randint(low=-1, high=2, size=(6, 7))
-x = th.rand(size=(6, 7)).unsqueeze(dim=0)
-x = x.unsqueeze(dim=0).float() # for batch dim
+x = x.unsqueeze(dim=0).unsqueeze(dim=0).float() # for batch dim
 y = th.zeros(7).unsqueeze(dim=0).unsqueeze(dim=0)
 
 # Construct our model by instantiating the class defined above
 model = CoolModel()
-model.a1(model.linear2(model.a1(model.conv1(x))))
 
 # Construct our loss function and an Optimizer. The call to model.parameters()
 # in the SGD constructor will contain the learnable parameters (defined 
 # with torch.nn.Parameter) which are members of the model.
 criterion = th.nn.MSELoss(reduction='sum')
-optimizer = th.optim.SGD(model.parameters(), lr=0.01)
-for t in range(2000):
+optimizer = th.optim.SGD(model.parameters(), lr=0.1)
+for t in range(5000):
     # Forward pass: Compute predicted y by passing x to the model
     y_pred = model(x)
 
@@ -73,5 +62,3 @@ for t in range(2000):
     optimizer.zero_grad()
     loss.backward()
     optimizer.step()
-
-
