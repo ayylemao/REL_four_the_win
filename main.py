@@ -8,7 +8,11 @@ import random
 model = CoolModel()
 
 loss_arr = []
-for i in range(0, 10000):
+nn_win = 0
+rp_win = 0
+win_hist = []
+for i in range(0, 20000):
+
     game = Game()
     while True:
         # Player 2
@@ -29,6 +33,7 @@ for i in range(0, 10000):
         if game.concluded:
             if game.outcome == 1: 
                 winner = 'Random Player'
+                rp_win += 1
             elif game.outcome == 0:
                 winner = 'Draw'
                 print('Draw')
@@ -51,6 +56,7 @@ for i in range(0, 10000):
         if game.concluded:
             if game.outcome == 1: 
                 winner = 'Neural Network'
+                nn_win += 1
             elif game.outcome == 0:
                 winner = 'Draw'
                 print('Draw')
@@ -127,29 +133,39 @@ for i in range(0, 10000):
                     pass
             elif winner == 'Draw':
                 pass  
-        loss_arr.append(loss_sum/game.turn_counter)
-        print(f'Game {i} loss: {loss_sum/game.turn_counter:.3f}, Winner {winner}')
+            loss_arr.append(loss_sum/game.turn_counter)
+        #print(f'Game {i} loss: {loss_sum/game.turn_counter:.3f}, Winner {winner}')
+        if i % 1000 == 0:
+            mean_loss = np.mean(loss_arr)
+            print('Game {i}:')
+            print(f'Mean Loss: {mean_loss:.3f}')
+            print(f'NN Win: {nn_win/10:.3f}%')
+            print(f'RP Win: {rp_win/10:.3f}%')
+            print(f'')
+            loss_arr = []
+            nn_win = 0
+            rp_win = 0
+            win_hist.append(nn_win)
+
 
 
 fig, ax = plt.subplots(1,1)
 ax.plot(loss_arr)
 fig.savefig('loss.png', dpi=300)
+game = Game()
 
+nonzero_indices = np.nonzero(game.admissable_moves)[0] 
+game.move(np.random.choice(nonzero_indices), -1) 
 
-#game = Game()
-#
-#nonzero_indices = np.nonzero(game.admissable_moves)[0] 
-#game.move(np.random.choice(nonzero_indices), -1) 
-#
-#state_input = th.tensor(game.state).unsqueeze(dim=0).unsqueeze(dim=0).float()
-#model_out = model(state_input)
-#
-#admissable_tens = th.tensor(game.admissable_moves)
-#nonzero_indices = th.nonzero(admissable_tens)
-#masked_tensor = model_out[0, nonzero_indices]
-#max_index = nonzero_indices[th.argmax(masked_tensor)]
-#choice = max_index.item()
-#game.move(choice, 1)
-#game.state
-#model_out
-#model_out.shape
+state_input = th.tensor(game.state).unsqueeze(dim=0).unsqueeze(dim=0).float()
+model_out = model(state_input)
+
+admissable_tens = th.tensor(game.admissable_moves)
+nonzero_indices = th.nonzero(admissable_tens)
+masked_tensor = model_out[0, nonzero_indices]
+max_index = nonzero_indices[th.argmax(masked_tensor)]
+choice = max_index.item()
+game.move(choice, 1)
+game.state
+model_out
+model_out.shape
