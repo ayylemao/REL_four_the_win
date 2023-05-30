@@ -80,7 +80,7 @@ for i in range(0, 100000):
     player_id[1::2] = 1
     if game.outcome == 1:
         loss_sum = 0.0
-        for turn in range(0, game.turn_counter, 2):
+        for turn in range(0, 5, 2):
             # WINNER        
             # y_true 
             current_move = game.move_history[turn]
@@ -144,15 +144,15 @@ for i in range(0, 100000):
             elif winner == 'Draw':
                 pass  
             loss_arr.append(loss_sum/game.turn_counter)
-        if i % 10 == 0:
-            recent_loss = loss_arr[-11:-1]
-            print(f'Game {i} loss: {np.mean(recent_loss):.3f}')
-        if i % 1000 == 0:
+        #if i % 1 == 100:
+            #recent_loss = loss_arr[-11:-1]
+            #print(f'Game {i} loss: {np.mean(recent_loss):.3f}, Winner: {winner}')
+        if i % 100 == 0:
             mean_loss = np.mean(loss_arr)
             print(f'Game {i}:')
             print(f'Mean Loss: {mean_loss:.3f}')
-            print(f'NN Win: {nn_win/10:.3f}%')
-            print(f'RP Win: {rp_win/10:.3f}%')
+            print(f'NN Win: {nn_win:.3f}%')
+            print(f'RP Win: {rp_win:.3f}%')
             print(f'Example State:')
             print(game.state)
             loss_arr = []
@@ -165,6 +165,18 @@ for i in range(0, 100000):
 fig, ax = plt.subplots(1,1)
 ax.plot(win_hist)
 fig.savefig('loss.png', dpi=300)
+
+th.save(model.state_dict(), 'model001.torch')
+
+game = Game()
+game.move(3, -1)
+
+state_input = th.tensor(game.state).unsqueeze(dim=0).unsqueeze(dim=0).float()
+
+model_out = model(state_input)
+model_out
+
+
 game = Game()
 
 nonzero_indices = np.nonzero(game.admissable_moves)[0] 

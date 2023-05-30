@@ -10,16 +10,13 @@ class CoolModel(nn.Module):
         """
         super().__init__()
         
-        self.conv1 = nn.Conv2d(in_channels=1, out_channels=64, kernel_size=4, stride=1, padding=2)
-        self.relu1 = nn.Tanh()
-        self.conv2 = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=4, stride=1, padding=2)
-        self.relu2 = nn.Tanh()
-        self.fc1 = nn.Linear(64 * 8 * 9, 64)
-        self.relu3 = nn.Tanh()
-        self.fc2 = nn.Linear(64, 64)
-        self.relu4 = nn.Tanh()
+        self.tanh = nn.Tanh()
+        self.conv1 = nn.Conv2d(in_channels=1, out_channels=128, kernel_size=4, stride=1, padding=2)
+        self.conv2 = nn.Conv2d(in_channels=128, out_channels=64, kernel_size=2, stride=1, padding=2)
+        self.conv3 = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=2, stride=1, padding=2)
+        self.fc1 = nn.Linear(11648, 364)
+        self.fc2 = nn.Linear(364, 64)
         self.output = nn.Linear(64, 7)
-        self.relu_out = nn.Tanh()
 
     def forward(self, x):
         """
@@ -27,12 +24,16 @@ class CoolModel(nn.Module):
         a Tensor of output data. We can use Modules defined in the constructor as
         well as arbitrary operators on Tensors.
         """
-        x = self.relu1(self.conv1(x))
-        x = self.relu2(self.conv2(x))
+        x = self.tanh(self.conv1(x))
+        x = self.tanh(self.conv2(x))
+        x = self.tanh(self.conv3(x))
         x = x.view(x.size(0), -1)
-        x = self.relu3(self.fc1(x))
-        x = self.relu4(self.fc2(x))
-        x = self.relu_out(self.output(x))
+        x = self.tanh(self.fc1(x))
+        x = self.tanh(self.fc2(x))
+        x = self.tanh(self.output(x))
         return x
+
+
+
 
 
