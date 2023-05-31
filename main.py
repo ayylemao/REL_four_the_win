@@ -12,7 +12,8 @@ nonstarter_bonus = 0.2
 
 
 model = CoolModel()
-
+criterion = th.nn.MSELoss()
+optimizer = th.optim.SGD(model.parameters(), lr=0.0001)
 
 loss_arr = []
 nn_win = 0
@@ -73,8 +74,6 @@ for i in range(0, 100000):
 
 
 
-    criterion = th.nn.MSELoss()
-    optimizer = th.optim.SGD(model.parameters(), lr=0.0001)
     player_id = np.empty(42)
     player_id[::2] = -1
     player_id[1::2] = 1
