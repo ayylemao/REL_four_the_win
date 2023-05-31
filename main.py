@@ -1,6 +1,6 @@
 import numpy as np
-from game import Game
-from model import CoolModel
+from rel_con4 import Game, CoolModel
+from rel_con4.agents import RandomPlayer, NNPlayer
 import torch as th
 import matplotlib.pyplot as plt
 import random
@@ -20,27 +20,17 @@ nn_win = 0
 rp_win = 0
 win_hist = []
 for i in range(0, 100000):
-
     game = Game()
+    rndplayer = RandomPlayer(game=game)
+    nnplayer = NNPlayer(game=game, model=model)
     while True:
-        # Player 2
-        state_input = th.tensor(game.state).unsqueeze(dim=0).unsqueeze(dim=0).float()
-        model_out = model(state_input*(-1))
-
-        admissable_tens = th.tensor(game.admissable_moves)
-        nonzero_indices = th.nonzero(admissable_tens)
-        masked_tensor = model_out[0, nonzero_indices]
-        max_index = nonzero_indices[th.argmax(masked_tensor)]
-        choice = max_index.item()
-        game.move(choice, -1)
-
-        ## RANDOM PLAYER
-        #nonzero_indices = np.nonzero(game.admissable_moves)[0] 
-        #game.move(np.random.choice(nonzero_indices), -1) 
+        # Player 1
+        rndplayer.move(player=1)
         
+        # win check 
         if game.concluded:
             if game.outcome == 1: 
-                winner = 'Random Player'
+                winner = 'Starting_Player'
                 rp_win += 1
             elif game.outcome == 0:
                 winner = 'Draw'
@@ -49,21 +39,12 @@ for i in range(0, 100000):
         # =============================================================================
 
         # Player 1
-        state_input = th.tensor(game.state).unsqueeze(dim=0).unsqueeze(dim=0).float()
-        model_out = model(state_input)
-
-        # Since model_out[i] can be zero but the only admissable move,
-        # we need to be smarter about choosing the next move:
-        admissable_tens = th.tensor(game.admissable_moves)
-        nonzero_indices = th.nonzero(admissable_tens)
-        masked_tensor = model_out[0, nonzero_indices]
-        max_index = nonzero_indices[th.argmax(masked_tensor)]
-        choice = max_index.item()
-
-        game.move(choice, 1)
+        nnplayer.move(player=-1) 
+        
+        
         if game.concluded:
             if game.outcome == 1: 
-                winner = 'Neural Network'
+                winner = 'Nonstarting_Player'
                 nn_win += 1
             elif game.outcome == 0:
                 winner = 'Draw'
@@ -83,7 +64,7 @@ for i in range(0, 100000):
             # WINNER        
             # y_true 
             current_move = game.move_history[turn]
-            if winner == 'Random Player':
+            if winner == 'Starting_Player':
                 # Winner prop
                 current_move = game.move_history[turn]
                 y =  np.zeros(7)
@@ -114,7 +95,7 @@ for i in range(0, 100000):
             elif winner == 'Draw':
                 pass 
             
-            if winner == 'Neural Network':
+            if winner == 'Nonstarting_Player':
                 current_move = game.move_history[turn]
                 y =  np.ones(7) * neutral_move
                 y[current_move[0]] = (loss_move + nonstarter_bonus)
