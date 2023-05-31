@@ -1,6 +1,6 @@
 import numpy as np
 
-class Game():
+class Game:
     def __init__(self) -> None:
         self.state : np.ndarray = np.zeros([6, 7])
         self.history : dict = {0 : self.state.copy()}
