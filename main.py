@@ -10,11 +10,18 @@ win_move = +0.6
 neutral_move = 0.2
 nonstarter_bonus = 0.2
 
-
+model2 = CoolModel()
 model = CoolModel()
 criterion = th.nn.MSELoss()
 optimizer = th.optim.SGD(model.parameters(), lr=0.0001)
 prop = Propagation(model=model, 
+                   criterion=criterion, 
+                   optimizer=optimizer,
+                   win_bonus=win_move,
+                   loss_penalty=loss_move,
+                   neutral_bonus=neutral_move,
+                   non_starter_bonus=nonstarter_bonus)
+prop2 = Propagation(model=model2, 
                    criterion=criterion, 
                    optimizer=optimizer,
                    win_bonus=win_move,
@@ -30,9 +37,10 @@ win_hist = []
 PLAYER_A = 1
 PLAYER_B = -1
 STARTER_DICT = {PLAYER_A : True, PLAYER_B : False}
+PROP_DICT = {PLAYER_A : prop2, PLAYER_B : prop}
 for i in range(0, 100000):
     game = Game()
-    rndplayer = RandomPlayer(game=game)
+    rndplayer = NNPlayer(game=game, model=model2)#RandomPlayer(game=game)
     nnplayer = NNPlayer(game=game, model=model)
 
     
@@ -69,12 +77,12 @@ for i in range(0, 100000):
 
     # Reenforcement Part
     if game.outcome != 'draw':
-        win_loss = prop.rel_win_prop(game=game,
-                                        player=winner,
-                                        starter=STARTER_DICT[winner])
-        loss_loss = prop.rel_loss_prop(game=game,
-                                    player=loser,
-                                    starter=STARTER_DICT[loser])
+        win_loss = PROP_DICT[winner].rel_win_prop(game=game,
+                                                  player=winner,
+                                                  starter=STARTER_DICT[winner])
+        loss_loss = PROP_DICT[loser].rel_loss_prop(game=game,
+                                                   player=loser,
+                                                   starter=STARTER_DICT[loser])
         win_arr.append(win_loss) 
         loss_arr.append(loss_loss)
     #if i % 1 == 100:
@@ -90,8 +98,8 @@ for i in range(0, 100000):
         print(f'B Win: {wins_b:.3f}%')
         print(f'Example State:')
         print(game.state)
+        print(f'Win type: {game.outcome}, winner {winner}')
         loss_arr = []
-        win_arr
         win_hist.append(winner)
         wins_a = 0
         wins_b = 0
