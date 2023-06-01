@@ -51,4 +51,32 @@ class Propagation:
             except IndexError:
                 pass
             return loss_sum / (game.turn_counter / 2)
+    
+    def rel_loss_prop(self,
+                      game,
+                      player : int,
+                      starter : bool):
+        loss_sum = 0.0
+        if starter:
+            init_turn = 0
+            eff_loss_penalty = self.loss_penalty 
+        elif not starter:
+            init_turn = 1
+            eff_loss_penalty = self.loss_penalty + self.non_starter_bonus
+        for turn in range(init_turn, game.turn_counter, 2):
+            try:
+                current_move = game.move_history[turn]
+                y = np.ones(7) * self.neutral_bonus
+                y[current_move[0]] = eff_loss_penalty
+                y = th.tensor(y).unsqueeze(0).float()
+                current_state = th.tensor(game.history[turn]*player).unsqueeze(0).unsqueeze(0).float()
+                y_pred = self.model(current_state)
+                loss = self.criterion(y_pred, y)
+                loss_sum += loss.item()
+                self.optimizer.zero_grad()
+                loss.backward()
+                self.optimizer.step()
+            except IndexError:
+                pass
+        return loss_sum / (game.turn_counter / 2)
         
