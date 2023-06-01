@@ -6,24 +6,25 @@ import matplotlib.pyplot as plt
 import random
 
 loss_move = -0.8
-win_move = +0.6
+win_move = +0.8
 neutral_move = 0.2
-nonstarter_bonus = 0.2
+nonstarter_bonus = 0.0
 
-model2 = CoolModel()
-model = CoolModel()
+model_A = CoolModel()
+model_B = CoolModel()
 criterion = th.nn.MSELoss()
-optimizer = th.optim.SGD(model.parameters(), lr=0.0001)
-prop = Propagation(model=model, 
+optimizer_A = th.optim.SGD(model_A.parameters(), lr=0.0001)
+optimizer_B = th.optim.SGD(model_B.parameters(), lr=0.0001)
+prop_A = Propagation(model=model_A, 
                    criterion=criterion, 
-                   optimizer=optimizer,
+                   optimizer=optimizer_A,
                    win_bonus=win_move,
                    loss_penalty=loss_move,
                    neutral_bonus=neutral_move,
                    non_starter_bonus=nonstarter_bonus)
-prop2 = Propagation(model=model2, 
+prop_B = Propagation(model=model_B, 
                    criterion=criterion, 
-                   optimizer=optimizer,
+                   optimizer=optimizer_B,
                    win_bonus=win_move,
                    loss_penalty=loss_move,
                    neutral_bonus=neutral_move,
@@ -37,18 +38,18 @@ win_hist = []
 PLAYER_A = 1
 PLAYER_B = -1
 STARTER_DICT = {PLAYER_A : True, PLAYER_B : False}
-PROP_DICT = {PLAYER_A : prop2, PLAYER_B : prop}
+PROP_DICT = {PLAYER_A : prop_A, PLAYER_B : prop_B}
 for i in range(0, 100000):
     game = Game()
-    rndplayer = NNPlayer(game=game, model=model2)#RandomPlayer(game=game)
-    nnplayer = NNPlayer(game=game, model=model)
+    nnplayer_A = NNPlayer(game=game, model=model_A)#RandomPlayer(game=game)
+    nnplayer_B = NNPlayer(game=game, model=model_B)
 
     
     # Game Loop
     # ================================= Game Loop ===================================
     while True:
         # Player 1
-        rndplayer.move(player=PLAYER_A)
+        nnplayer_A.move(player=PLAYER_A)
         
         # win check 
         if game.concluded:
@@ -61,7 +62,7 @@ for i in range(0, 100000):
             break
 
         # Player 2
-        nnplayer.move(player=PLAYER_B) 
+        nnplayer_B.move(player=PLAYER_B) 
         
         
         if game.concluded:
