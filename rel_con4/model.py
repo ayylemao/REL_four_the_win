@@ -1,15 +1,19 @@
-import torch as th
+'''
+Network class used as main logic of an agent playing connect 4.
+'''
+
 from torch import nn
 
 
 class CoolModel(nn.Module):
+    '''
+    Network class used as main logic of an agent playing for connect 4.
+    '''
     def __init__(self):
         """
-        In the constructor we instantiate four parameters and assign them as
-        member parameters.
+        Definition of the network's layers.
         """
-        super().__init__()
-        
+        super().__init__()       
         self.tanh = nn.Tanh()
         self.conv1 = nn.Conv2d(in_channels=1, out_channels=128, kernel_size=4, stride=1, padding=2)
         self.conv2 = nn.Conv2d(in_channels=128, out_channels=64, kernel_size=2, stride=1, padding=2)
@@ -20,9 +24,7 @@ class CoolModel(nn.Module):
 
     def forward(self, x):
         """
-        In the forward function we accept a Tensor of input data and we must return
-        a Tensor of output data. We can use Modules defined in the constructor as
-        well as arbitrary operators on Tensors.
+        Forward pass of the network.
         """
         x = self.tanh(self.conv1(x))
         x = self.tanh(self.conv2(x))
@@ -32,8 +34,3 @@ class CoolModel(nn.Module):
         x = self.tanh(self.fc2(x))
         x = self.tanh(self.output(x))
         return x
-
-
-
-
-
