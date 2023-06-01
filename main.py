@@ -1,5 +1,5 @@
 import numpy as np
-from rel_con4 import Game, CoolModel
+from rel_con4 import Game, CoolModel, Propagation
 from rel_con4.agents import RandomPlayer, NNPlayer
 import torch as th
 import matplotlib.pyplot as plt
@@ -14,131 +14,150 @@ nonstarter_bonus = 0.2
 model = CoolModel()
 criterion = th.nn.MSELoss()
 optimizer = th.optim.SGD(model.parameters(), lr=0.0001)
+prop = Propagation(model=model, 
+                   criterion=criterion, 
+                   optimizer=optimizer,
+                   win_bonus=win_move,
+                   loss_penalty=loss_move,
+                   neutral_bonus=neutral_move,
+                   non_starter_bonus=nonstarter_bonus)
 
 loss_arr = []
 nn_win = 0
 rp_win = 0
 win_hist = []
+PLAYER_A = 1
+PLAYER_B = -1
+STARTER_DICT = {PLAYER_A : True, PLAYER_B : False}
 for i in range(0, 100000):
     game = Game()
     rndplayer = RandomPlayer(game=game)
     nnplayer = NNPlayer(game=game, model=model)
+
+    
+    # Game Loop
+    # ================================= Game Loop ===================================
     while True:
         # Player 1
-        rndplayer.move(player=1)
+        rndplayer.move(player=PLAYER_A)
         
         # win check 
         if game.concluded:
-            if game.outcome == 1: 
-                winner = 'Starting_Player'
+            if game.outcome != 'draw': 
+                winner = PLAYER_A
+                loser = PLAYER_B
                 rp_win += 1
-            elif game.outcome == 0:
+            elif game.outcome == 'draw':
                 winner = 'Draw'
                 print('Draw')
             break
-        # =============================================================================
 
-        # Player 1
-        nnplayer.move(player=-1) 
+        # Player 2
+        nnplayer.move(player=PLAYER_B) 
         
         
         if game.concluded:
-            if game.outcome == 1: 
-                winner = 'Nonstarting_Player'
+            if game.outcome != 'draw': 
+                winner = PLAYER_B
+                loser = PLAYER_A
                 nn_win += 1
-            elif game.outcome == 0:
+            elif game.outcome == 'draw':
                 winner = 'Draw'
                 print('Draw')
             break
+    # =================================================================================
 
+    # Reenforcement Part
+    if winner == PLAYER_A:
+        win_loss = prop.rel_win_prop(game=game,
+                                     player=winner,
+                                     starter=STARTER_DICT[PLAYER_A])
+    elif winner == PLAYER_B:
+        win_loss = prop.rel_win_prop(game=game,
+                                     player=winner,
+                                     starter=STARTER_DICT[PLAYER_B])
+    #print(game.state)
 
-
-
-
-    player_id = np.empty(42)
-    player_id[::2] = -1
-    player_id[1::2] = 1
-    if game.outcome == 1:
-        loss_sum = 0.0
-        for turn in range(0, 5, 2):
-            # WINNER        
-            # y_true 
-            current_move = game.move_history[turn]
-            if winner == 'Starting_Player':
-                # Winner prop
-                current_move = game.move_history[turn]
-                y =  np.zeros(7)
-                y[current_move[0]] = (win_move + nonstarter_bonus)
-                y = th.tensor(y).unsqueeze(0).float()
-                current_state = th.tensor(game.history[turn]*(-1)).unsqueeze(dim=0).unsqueeze(dim=0).float()
-                y_pred = model(current_state)
-                loss = criterion(y_pred, y) 
-                loss_sum += loss.item() 
-                optimizer.zero_grad()
-                loss.backward()
-                optimizer.step()
-                # Loser prop
-                try:
-                    current_move = game.move_history[turn+1]
-                    y =  np.ones(7) * neutral_move
-                    y[current_move[0]] = loss_move
-                    y = th.tensor(y).unsqueeze(0).float()
-                    current_state = th.tensor(game.history[turn+1]).unsqueeze(dim=0).unsqueeze(dim=0).float()
-                    y_pred = model(current_state)
-                    loss = criterion(y_pred, y) 
-                    loss_sum += loss.item() 
-                    optimizer.zero_grad()
-                    loss.backward()
-                    optimizer.step()
-                except IndexError:
-                    pass
-            elif winner == 'Draw':
-                pass 
-            
-            if winner == 'Nonstarting_Player':
-                current_move = game.move_history[turn]
-                y =  np.ones(7) * neutral_move
-                y[current_move[0]] = (loss_move + nonstarter_bonus)
-                y = th.tensor(y).unsqueeze(0).float()
-                current_state = th.tensor(game.history[turn]*(-1)).unsqueeze(dim=0).unsqueeze(dim=0).float()
-                y_pred = model(current_state)
-                loss = criterion(y_pred, y) 
-                loss_sum += loss.item() 
-                optimizer.zero_grad()
-                loss.backward()
-                optimizer.step()
-                try:
-                    current_move = game.move_history[turn+1]
-                    y =  np.zeros(7)
-                    y[current_move[0]] = win_move
-                    y = th.tensor(y).unsqueeze(0).float()
-                    current_state = th.tensor(game.history[turn+1]).unsqueeze(dim=0).unsqueeze(dim=0).float()
-                    y_pred = model(current_state)
-                    loss = criterion(y_pred, y) 
-                    loss_sum += loss.item() 
-                    optimizer.zero_grad()
-                    loss.backward()
-                    optimizer.step()
-                except IndexError:
-                    pass
-            elif winner == 'Draw':
-                pass  
-            loss_arr.append(loss_sum/game.turn_counter)
-        #if i % 1 == 100:
-            #recent_loss = loss_arr[-11:-1]
-            #print(f'Game {i} loss: {np.mean(recent_loss):.3f}, Winner: {winner}')
-        if i % 100 == 0:
-            mean_loss = np.mean(loss_arr)
-            print(f'Game {i}:')
-            print(f'Mean Loss: {mean_loss:.3f}')
-            print(f'NN Win: {nn_win:.3f}%')
-            print(f'RP Win: {rp_win:.3f}%')
-            print(f'Example State:')
-            print(game.state)
-            loss_arr = []
-            win_hist.append(nn_win)
-            nn_win = 0
-            rp_win = 0
+    #loss_sum = 0.0
+    #for turn in range(0, 5, 2):
+    #    # WINNER        
+    #    # y_true 
+    #    current_move = game.move_history[turn]
+    #    if winner == 'Player A':
+    #        # Winner prop
+    #        current_move = game.move_history[turn]
+    #        y =  np.zeros(7)
+    #        y[current_move[0]] = (win_move + nonstarter_bonus)
+    #        y = th.tensor(y).unsqueeze(0).float()
+    #        current_state = th.tensor(game.history[turn]*(-1)).unsqueeze(dim=0).unsqueeze(dim=0).float()
+    #        y_pred = model(current_state)
+    #        loss = criterion(y_pred, y) 
+    #        loss_sum += loss.item() 
+    #        optimizer.zero_grad()
+    #        loss.backward()
+    #        optimizer.step()
+    #        # Loser prop
+    #        try:
+    #            current_move = game.move_history[turn+1]
+    #            y =  np.ones(7) * neutral_move
+    #            y[current_move[0]] = loss_move
+    #            y = th.tensor(y).unsqueeze(0).float()
+    #            current_state = th.tensor(game.history[turn+1]).unsqueeze(dim=0).unsqueeze(dim=0).float()
+    #            y_pred = model(current_state)
+    #            loss = criterion(y_pred, y) 
+    #            loss_sum += loss.item() 
+    #            optimizer.zero_grad()
+    #            loss.backward()
+    #            optimizer.step()
+    #        except IndexError:
+    #            pass
+    #    elif winner == 'Draw':
+    #        pass 
+    #    
+    #    if winner == 'Player B':
+    #        current_move = game.move_history[turn]
+    #        y =  np.ones(7) * neutral_move
+    #        y[current_move[0]] = (loss_move + nonstarter_bonus)
+    #        y = th.tensor(y).unsqueeze(0).float()
+    #        current_state = th.tensor(game.history[turn]*(-1)).unsqueeze(dim=0).unsqueeze(dim=0).float()
+    #        y_pred = model(current_state)
+    #        loss = criterion(y_pred, y) 
+    #        loss_sum += loss.item() 
+    #        optimizer.zero_grad()
+    #        loss.backward()
+    #        optimizer.step()
+    #        try:
+    #            current_move = game.move_history[turn+1]
+    #            y =  np.zeros(7)
+    #            y[current_move[0]] = win_move
+    #            y = th.tensor(y).unsqueeze(0).float()
+    #            current_state = th.tensor(game.history[turn+1]).unsqueeze(dim=0).unsqueeze(dim=0).float()
+    #            y_pred = model(current_state)
+    #            loss = criterion(y_pred, y) 
+    #            loss_sum += loss.item() 
+    #            optimizer.zero_grad()
+    #            loss.backward()
+    #            optimizer.step()
+    #        except IndexError:
+    #            pass
+    #    elif winner == 'Draw':
+    #        pass  
+    #    loss_arr.append(loss_sum/game.turn_counter)
+    ##if i % 1 == 100:
+    #    #recent_loss = loss_arr[-11:-1]
+    #    #print(f'Game {i} loss: {np.mean(recent_loss):.3f}, Winner: {winner}')
+    #if i % 100 == 0:
+    #    mean_loss = np.mean(loss_arr)
+    #    print(f'Game {i}:')
+    #    print(f'Mean Loss: {mean_loss:.3f}')
+    #    print(f'NN Win: {nn_win:.3f}%')
+    #    print(f'RP Win: {rp_win:.3f}%')
+    #    print(f'Example State:')
+    #    print(game.state)
+    #    loss_arr = []
+    #    win_hist.append(nn_win)
+    #    nn_win = 0
+    #    rp_win = 0
 
 
 

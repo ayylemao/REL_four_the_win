@@ -7,7 +7,7 @@ class Game:
         self.move_history : list = []
         self.concluded : bool = False
         self.turn_counter : int = 0
-        self.outcome : int = None # None for non concluded game, 0 for draw, 1 for winning game
+        self.outcome : str = None # None for non concluded game, 0 for draw, 1 for winning game
         self.admissable_moves : np.ndarray = np.ones(7) # can play into col i if array[i] == 1
         
         
@@ -49,29 +49,29 @@ class Game:
                 # check for diag win con
                 if np.trace(v[i, j, :, :]) == 4 or np.trace(v[i, j, :, :]) == -4:
                     self.concluded = True
-                    self.outcome = 1
+                    self.outcome = 'diag'
                     return
                 # check for anti-diag wincon
                 if np.trace(np.fliplr(v[i, j, :, :])) == 4 or np.trace(np.fliplr(v[i, j, :, :])) == -4:
                     self.concluded = True 
-                    self.outcome = 1
+                    self.outcome = 'diag'
                     return
 
                 for k in range(4):
                     # check for vertical wincon
                     if np.sum(v[i, j, :, k]) == 4 or np.sum(v[i, j, :, k]) == -4:
                         self.concluded = True
-                        self.outcome = 1
+                        self.outcome = 'vert'
                         return
                     # check for horizontal wincon
                     if np.sum(v[i, j, k, :]) == 4 or np.sum(v[i, j, k, :]) == -4:
                         self.concluded = True
-                        self.outcome = 1
+                        self.outcome = 'hori'
                         return
         
     def draw(self) -> None:
         if not np.any(self.state == 0):
-            self.outcome = 0
             self.concluded = True
+            self.outcome = 'draw'
 
 
