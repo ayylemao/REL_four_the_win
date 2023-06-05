@@ -136,6 +136,12 @@ for i in range(0, 100000):
 fig, ax = plt.subplots(1,1)
 ax.plot(loss_arr)
 fig.savefig('loss.png', dpi=300)
+
+# th.save({
+#     "epoch": 1,
+#     "model_state_dict": model_B.state_dict(),
+#     "optimizer_state_dict": optimizer_B.state_dict(),
+#     }, "model.torch")
 #
 #th.save(model.state_dict(), 'model001.torch')
 #
