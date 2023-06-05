@@ -49,7 +49,7 @@ for i in range(0, 100000):
         while True:
             # Player 1
             starter_dict = {PLAYER_A : True, PLAYER_B : False}
-            nnplayer_A.move(player=PLAYER_A)
+            nnplayer_A.make_move(player=PLAYER_A)
             
             # win check 
             if game.concluded:
@@ -62,7 +62,7 @@ for i in range(0, 100000):
                 break
 
             # Player 2
-            nnplayer_B.move(player=PLAYER_B) 
+            nnplayer_B.make_move(player=PLAYER_B) 
             
             
             if game.concluded:
@@ -78,7 +78,7 @@ for i in range(0, 100000):
         while True:
             starter_dict = {PLAYER_A : False, PLAYER_B : True}
             # Player 2
-            nnplayer_B.move(player=PLAYER_B) 
+            nnplayer_B.make_move(player=PLAYER_B) 
             
             
             if game.concluded:
@@ -92,7 +92,7 @@ for i in range(0, 100000):
                 break
 
             # Player 1
-            nnplayer_A.move(player=PLAYER_A)
+            nnplayer_A.make_move(player=PLAYER_A)
             
             # win check 
             if game.concluded:
