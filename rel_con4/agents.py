@@ -12,9 +12,9 @@ class RandomPlayer:
     def __init__(self, game) -> None:
         self.game = game
     
-    def move(self, player):
+    def make_move(self, player):
         nonzero_indices = np.nonzero(self.game.admissable_moves)[0]
-        self.game.move(np.random.choice(nonzero_indices), player)
+        self.game.process_move(np.random.choice(nonzero_indices), player)
 
 
 
@@ -26,7 +26,7 @@ class NNPlayer:
         self.game = game
         self.model = model
         
-    def move(self, player : int):
+    def make_move(self, player : int):
         
         # network is always player 1, so if we are letting it play as player -1 we need to adjust for it
         if player == 1:
@@ -36,17 +36,17 @@ class NNPlayer:
         else:
             raise RuntimeError('Player must be -1 or 1!')
         
-        # get probabilities on choices from model
-        state_input = th.tensor(self.game.state).unsqueeze(dim=0).unsqueeze(dim=0).float()
-        model_out = self.model(state_input*flip)
+        # get probabilities on moves from model
+        game_state = th.tensor(self.game.state).unsqueeze(dim=0).unsqueeze(dim=0).float()
+        move_probabilities = self.model(game_state*flip)
 
         # get admissible choices
         admissable_tens = th.tensor(self.game.admissable_moves)
         nonzero_indices = th.nonzero(admissable_tens)
-        masked_tensor = model_out[0, nonzero_indices]
+        masked_tensor = move_probabilities[0, nonzero_indices]
         max_index = nonzero_indices[th.argmax(masked_tensor)]
-        choice = max_index.item()
+        move = max_index.item()
         
         # make choice in the game
-        self.game.move(choice, player)
+        self.game.process_move(move, player)
         

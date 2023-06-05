@@ -13,7 +13,7 @@ class CoolModel(nn.Module):
         """
         Definition of the network's layers.
         """
-        super().__init__()       
+        super().__init__()
         self.tanh = nn.Tanh()
         self.conv1 = nn.Conv2d(in_channels=1, out_channels=128, kernel_size=4, stride=1, padding=2)
         self.conv2 = nn.Conv2d(in_channels=128, out_channels=64, kernel_size=2, stride=1, padding=2)
