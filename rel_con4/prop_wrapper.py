@@ -47,7 +47,7 @@ class Propagation:
             try:
                 current_move = game.move_history[turn]
                 y = np.zeros(7)
-                y[current_move[0]] = eff_win_bonus
+                y[current_move[0]] = eff_win_bonus 
                 y = th.tensor(y).unsqueeze(0).float()
                 current_state = th.tensor(game.history[turn]*player).unsqueeze(0).unsqueeze(0).float()
                 y_pred = self.model(current_state)
@@ -86,6 +86,6 @@ class Propagation:
                 loss.backward()
                 self.optimizer.step()
             except IndexError:
-                pass
+                pass 
         return loss_sum / (game.turn_counter / 2)
         

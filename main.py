@@ -5,30 +5,31 @@ import torch as th
 import matplotlib.pyplot as plt
 import random
 
-loss_move = -0.4
-win_move = +0.6
-neutral_move = 0.0
-nonstarter_bonus = 0.0
+LOSS_MOVE = -0.8
+WIN_MOVE = +0.8
+NEUTRAL_MOVE = 0.0
+NON_STARTER_BONUS = 0.0
+LEARNING_RATE = 0.001
 
 model_A = CoolModel()
 model_B = CoolModel()
 criterion = th.nn.CrossEntropyLoss()
-optimizer_A = th.optim.SGD(model_A.parameters(), lr=0.0001)
-optimizer_B = th.optim.SGD(model_B.parameters(), lr=0.0001)
+optimizer_A = th.optim.SGD(model_A.parameters(), lr=LEARNING_RATE)
+optimizer_B = th.optim.SGD(model_B.parameters(), lr=LEARNING_RATE)
 prop_A = Propagation(model=model_A, 
                    criterion=criterion, 
                    optimizer=optimizer_A,
-                   win_bonus=win_move,
-                   loss_penalty=loss_move,
-                   neutral_bonus=neutral_move,
-                   non_starter_bonus=nonstarter_bonus)
+                   win_bonus=WIN_MOVE,
+                   loss_penalty=LOSS_MOVE,
+                   neutral_bonus=NEUTRAL_MOVE,
+                   non_starter_bonus=NON_STARTER_BONUS)
 prop_B = Propagation(model=model_B, 
                    criterion=criterion, 
                    optimizer=optimizer_B,
-                   win_bonus=win_move,
-                   loss_penalty=loss_move,
-                   neutral_bonus=neutral_move,
-                   non_starter_bonus=nonstarter_bonus)
+                   win_bonus=WIN_MOVE,
+                   loss_penalty=LOSS_MOVE,
+                   neutral_bonus=NEUTRAL_MOVE,
+                   non_starter_bonus=NON_STARTER_BONUS)
 
 win_arr = []
 loss_arr = []
@@ -40,7 +41,7 @@ PLAYER_B = -1
 PROP_DICT = {PLAYER_A : prop_A, PLAYER_B : prop_B}
 for i in range(0, 100000):
     game = Game()
-    nnplayer_A = NNPlayer(game=game, model=model_A)#RandomPlayer(game=game)
+    nnplayer_A = NNPlayer(game=game, model=model_A, rnd_move_chance=0.3)
     nnplayer_B = NNPlayer(game=game, model=model_B)
 
     if i % 2 == 0: 
