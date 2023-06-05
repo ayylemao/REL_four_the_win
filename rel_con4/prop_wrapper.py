@@ -1,8 +1,15 @@
+'''
+Weight updater class used to train models.
+'''
+
 import torch as th
 import numpy as np
 
 
 class Propagation:
+    '''
+    Weight updater class used to train models.
+    '''
     def __init__(self,
                  model,
                  criterion,
@@ -26,6 +33,7 @@ class Propagation:
                      player : int,
                      starter : bool,
                      ):
+        '''Update weights of winner.'''
         loss_sum = 0.0
         if starter:
             init_turn = 0
@@ -56,6 +64,7 @@ class Propagation:
                       game,
                       player : int,
                       starter : bool):
+        '''Update weights of loser.'''
         loss_sum = 0.0
         if starter:
             init_turn = 0
