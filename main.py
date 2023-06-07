@@ -1,5 +1,5 @@
 import numpy as np
-from rel_con4 import Game, CoolModel, Propagation
+from rel_con4 import Game, CoolModel, Propagation, WhackModel
 from rel_con4.agents import RandomPlayer, NNPlayer
 import torch as th
 import matplotlib.pyplot as plt
@@ -9,10 +9,10 @@ LOSS_MOVE = -0.8
 WIN_MOVE = +0.8
 NEUTRAL_MOVE = 0.0
 NON_STARTER_BONUS = 0.0
-LEARNING_RATE = 0.001
+LEARNING_RATE = 0.0001
 
-model_A = CoolModel()
-model_B = CoolModel()
+model_A = WhackModel()
+model_B = WhackModel()
 criterion = th.nn.CrossEntropyLoss()
 optimizer_A = th.optim.SGD(model_A.parameters(), lr=LEARNING_RATE)
 optimizer_B = th.optim.SGD(model_B.parameters(), lr=LEARNING_RATE)
@@ -41,7 +41,7 @@ PLAYER_B = -1
 PROP_DICT = {PLAYER_A : prop_A, PLAYER_B : prop_B}
 for i in range(0, 100000):
     game = Game()
-    nnplayer_A = NNPlayer(game=game, model=model_A, rnd_move_chance=0.3)
+    nnplayer_A = NNPlayer(game=game, model=model_A, rnd_move_chance=0.1)
     nnplayer_B = NNPlayer(game=game, model=model_B)
 
     if i % 2 == 0: 
@@ -134,28 +134,36 @@ for i in range(0, 100000):
         wins_b = 0
 
 
-fig, ax = plt.subplots(1,1)
-ax.plot(loss_arr)
-fig.savefig('loss.png', dpi=300)
+#fig, ax = plt.subplots(1,1)
+#ax.plot(loss_arr)
+#fig.savefig('loss.png', dpi=300)
 #
 #th.save(model.state_dict(), 'model001.torch')
 #
 #
 #
+
+#th.save({
+#            'epoch': 1,
+#            'model_state_dict': model_B.state_dict(),
+#            'optimizer_state_dict': optimizer_A.state_dict(),
+#            'loss': 0.1,
+#            }, 'model_B.torch')
+
 #game = Game()
 #
-#nonzero_indices = np.nonzero(game.admissable_moves)[0] 
-#game.move(4, -1) 
-#
 #state_input = th.tensor(game.state).unsqueeze(dim=0).unsqueeze(dim=0).float()
-#model_out = model_A(state_input)
+#model_out = model_B(state_input)
 #
 #admissable_tens = th.tensor(game.admissable_moves)
 #nonzero_indices = th.nonzero(admissable_tens)
 #masked_tensor = model_out[0, nonzero_indices]
 #max_index = nonzero_indices[th.argmax(masked_tensor)]
 #choice = max_index.item()
-#game.move(choice, 1)
+#game.process_move(choice, 1)
+#nonzero_indices = np.nonzero(game.admissable_moves)[0] 
+#game.process_move(4, -1) 
+#
 #game.state
 #model_out
 #model_out.shape
